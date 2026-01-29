@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>115年重補修作業時程表</title>
+    
+    <!-- 載入 Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 載入 React 和 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 載入 Babel (將 JSX 轉為瀏覽器看懂的程式) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* 列印專用樣式 */
+        @media print {
+            .no-print { display: none !important; }
+            .print-full { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+            body { background-color: white; }
+            /* 強制列印背景色，確保顏色標示可見 */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="root">
+        <div class="min-h-screen flex items-center justify-center text-gray-500">
+            系統載入中...
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 內建圖示元件 (移除外部依賴以修復錯誤) ---
+        const IconBase = ({ size = 18, children, className = "" }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const Calendar = (props) => (
+            <IconBase {...props}>
+                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                <line x1="16" x2="16" y1="2" y2="6"/>
+                <line x1="8" x2="8" y1="2" y2="6"/>
+                <line x1="3" x2="21" y1="10" y2="10"/>
+            </IconBase>
+        );
+
+        const Users = (props) => (
+            <IconBase {...props}>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </IconBase>
+        );
+
+        const FileText = (props) => (
+            <IconBase {...props}>
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" x2="8" y1="13" y2="13"/>
+                <line x1="16" x2="8" y1="17" y2="17"/>
+                <line x1="10" x2="8" y1="9" y2="9"/>
+            </IconBase>
+        );
+
+        const CheckCircle = (props) => (
+            <IconBase {...props}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </IconBase>
+        );
+
+        const Clock = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </IconBase>
+        );
+
+        const AlertCircle = (props) => (
+            <IconBase {...props}>
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" x2="12" y1="8" y2="12"/>
+                <line x1="12" x2="12.01" y1="16" y2="16"/>
+            </IconBase>
+        );
+
+        const School = (props) => (
+            <IconBase {...props}>
+                <path d="m4 6 8-4 8 4"/>
+                <path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/>
+                <path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/>
+                <path d="M18 5v17"/>
+                <path d="M6 5v17"/>
+                <circle cx="12" cy="9" r="2"/>
+            </IconBase>
+        );
+
+        const BookOpen = (props) => (
+            <IconBase {...props}>
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </IconBase>
+        );
+
+        const GraduationCap = (props) => (
+            <IconBase {...props}>
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </IconBase>
+        );
+
+        const Printer = (props) => (
+            <IconBase {...props}>
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                <rect width="12" height="8" x="6" y="14"/>
+            </IconBase>
+        );
+        // --- 圖示元件結束 ---
+
+
+        const SmartScheduleApp = () => {
+            const [activeRole, setActiveRole] = useState('admin');
+            const [isLocked, setIsLocked] = useState(false);
+
+            // 初始化時檢查網址參數
+            useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const roleParam = params.get('role');
+                
+                if (roleParam === 'student') {
+                setActiveRole('student');
+                setIsLocked(true);
+                } else if (roleParam === 'teacher') {
+                setActiveRole('teacher');
+                setIsLocked(true);
+                } else if (roleParam === 'admin') {
+                setActiveRole('admin');
+                setIsLocked(false); // 行政端通常不鎖定，方便切換檢查
+                } else {
+                setActiveRole('admin');
+                setIsLocked(false);
+                }
+            }, []);
+
+            // 資料來源：依據 115 年重補修作業規範草案
+            const scheduleData = [
+                {
+                id: 1,
+                stage: "第一階段：前置作業 (4月)",
+                date: "4/09 (四)",
+                role: "admin",
+                task: "公告「115 年重補修作業規範草案」",
+                detail: "同步發布教師意願調查說明",
+                icon: <FileText size={18} />
+                },
+                {
+                id: 2,
+                stage: "第一階段：前置作業 (4月)",
+                date: "4/09 (四)",
+                role: "admin",
+                task: "發布教師意願與時段調查表",
+                detail: "包含專班時段、學期中分流意願、大班教學意願",
+                icon: <FileText size={18} />
+                },
+                {
+                id: 3,
+                stage: "第一階段：前置作業 (4月)",
+                date: "4/10 - 4/30",
+                role: "teacher",
+                task: "【務必填寫】開課意願調查",
+                detail: "請回報暑期及學期中可配合之時段，以利排課。",
+                type: "critical",
+                icon: <CheckCircle size={18} />
+                },
+                {
+                id: 4,
+                stage: "第二階段：預選與判定 (5月)",
+                date: "5/18 (一) 09:00 - 5/22 (五) 23:59",
+                role: "student",
+                task: "【重要】選課意願確認 (預選)",
+                detail: "未參加預選者，視同放棄正式報名資格。此為判定開專班或自學班之重要依據。",
+                type: "critical",
+                icon: <CheckCircle size={18} />
+                },
+                {
+                id: 5,
+                stage: "第二階段：預選與判定 (5月)",
+                date: "5/18 - 5/22",
+                role: "admin",
+                task: "彙整預選名單與判定開班型態",
+                detail: "專班(15人+) / 自學輔導(6-14人) / 特殊開班",
+                icon: <Users size={18} />
+                },
+                {
+                id: 6,
+                stage: "第二階段：預選與判定 (5月)",
+                date: "5/21 (四)",
+                role: "admin",
+                task: "高三補考日",
+                detail: "需等待補考成績結算",
+                icon: <School size={18} />
+                },
+                {
+                id: 7,
+                stage: "第二階段：預選與判定 (5月)",
+                date: "5/26 - 5/27",
+                role: "admin",
+                task: "匯入高三補考後名單及教師時間",
+                detail: "系統設定與測試",
+                icon: <Clock size={18} />
+                },
+                {
+                id: 8,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "5/27 (三) 12:00 起",
+                endDate: "6/02 (二) 13:00 止",
+                role: "student",
+                task: "【第一梯次】正式線上報名",
+                detail: "對象：高三(全學年)、高一二(上學期科目)。請注意截止時間，逾時系統自動關閉。",
+                type: "critical",
+                icon: <GraduationCap size={18} />
+                },
+                {
+                id: 9,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/03 (三) 12:00 起",
+                endDate: "6/06 (六) 13:00 止",
+                role: "student",
+                task: "【第一梯次】線上繳費",
+                detail: "未於期限內繳費視同放棄報名。",
+                type: "critical",
+                icon: <AlertCircle size={18} />
+                },
+                {
+                id: 10,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/03 - 6/06",
+                role: "admin",
+                task: "核銷繳費與整理最終名單",
+                detail: "",
+                icon: <FileText size={18} />
+                },
+                {
+                id: 11,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/09 (二) 17:00前",
+                role: "admin",
+                task: "公告第一梯次正式課表",
+                detail: "公告專班教室與自學輔導名單",
+                icon: <FileText size={18} />
+                },
+                {
+                id: 12,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/10 (三) 起",
+                role: "teacher",
+                task: "第一梯次(高三)開始上課",
+                detail: "專班依課表上課，請確實點名。",
+                icon: <BookOpen size={18} />
+                },
+                {
+                id: 120, // 新增學生端的上課提醒
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/10 (三) 起",
+                role: "student",
+                task: "【專班】高三開始上課",
+                detail: "實體課程，請務必穿著制服到校上課。",
+                icon: <BookOpen size={18} />
+                },
+                {
+                id: 13,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/10 (三)",
+                role: "student",
+                task: "【自學班】高三 - 線上 Meeting",
+                detail: "採線上進行（不需穿著制服），時間詳見公告。",
+                type: "meeting",
+                icon: <Users size={18} />
+                },
+                {
+                id: 14,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/13 (六)",
+                role: "student",
+                task: "【自學班】高一二「上學期」 - 線上 Meeting",
+                detail: "採線上進行（不需穿著制服），時間詳見公告。",
+                type: "meeting",
+                icon: <Users size={18} />
+                },
+                {
+                id: 140,
+                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
+                date: "6/10 & 6/13",
+                role: "teacher",
+                task: "主持自學輔導班第一次 Meeting",
+                detail: "6/10(三)為高三場次、6/13(六)為高一二(上)場次。",
+                type: "critical",
+                icon: <Users size={18} />
+                },
+                {
+                id: 15,
+                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
+                date: "7/01 - 7/31",
+                role: "student",
+                task: "高一二「上學期」專班上課",
+                detail: "實體課程，請務必穿著制服到校上課。",
+                icon: <BookOpen size={18} />
+                },
+                {
+                id: 16,
+                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
+                date: "7/13 (一)",
+                role: "admin",
+                task: "高一二補考日",
+                detail: "注意成績結算時程",
+                icon: <School size={18} />
+                },
+                {
+                id: 17,
+                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
+                date: "7/15 - 7/16",
+                role: "admin",
+                task: "匯入高一二補考後名單",
+                detail: "準備第二梯次報名系統",
+                icon: <Clock size={18} />
+                },
+                {
+                id: 18,
+                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
+                date: "7/16 (四) 12:00 起",
+                endDate: "7/19 (日) 13:00 止",
+                role: "student",
+                task: "【第二梯次】正式線上報名",
+                detail: "對象：高一二(下學期科目)。",
+                type: "critical",
+                icon: <GraduationCap size={18} />
+                },
+                {
+                id: 19,
+                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
+                date: "7/21 (二) 12:00 起",
+                endDate: "7/23 (四) 13:00 止",
+                role: "student",
+                task: "【第二梯次】線上繳費",
+                detail: "逾期不候，請自行留意繳費單狀態。",
+                type: "critical",
+                icon: <AlertCircle size={18} />
+                },
+                {
+                id: 20,
+                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
+                date: "7/28 (二) 17:00前",
+                role: "admin",
+                task: "公告第二梯次正式課表",
+                detail: "及 7/29 Meeting 連結",
+                icon: <FileText size={18} />
+                },
+                {
+                id: 21,
+                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
+                date: "7/29 (三)",
+                role: "teacher",
+                task: "主持高一二「下學期」自學班 Meeting",
+                detail: "與學生確認學期中授課方式及評量標準。",
+                icon: <Users size={18} />
+                },
+                {
+                id: 210,
+                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
+                date: "7/29 (三)",
+                role: "student",
+                task: "【自學班】高一二「下學期」 - 線上 Meeting",
+                detail: "採線上進行（不需穿著制服），確認後續上課方式。",
+                type: "meeting",
+                icon: <Users size={18} />
+                },
+                {
+                id: 22,
+                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
+                date: "7/29 - 8/30",
+                role: "student",
+                task: "第二梯次 (高一二下) 課程執行",
+                detail: "專班實體課程，請務必穿著制服到校上課。",
+                icon: <BookOpen size={18} />
+                },
+                {
+                id: 24,
+                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
+                date: "9月 - 11月",
+                role: "teacher",
+                task: "進行學期中分流教學",
+                detail: "依學科屬性安排週末或課後輔導",
+                icon: <BookOpen size={18} />
+                },
+                {
+                id: 25,
+                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
+                date: "課程結束後 3 日內",
+                role: "teacher",
+                task: "繳交成績與教學日誌",
+                detail: "含遠距截圖、紙本成績單。請務必準時以免影響學生學分計算。",
+                type: "critical",
+                icon: <CheckCircle size={18} />
+                },
+                {
+                id: 26,
+                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
+                date: "12月",
+                role: "admin",
+                task: "全年度經費核銷",
+                detail: "發放教師鐘點費",
+                icon: <FileText size={18} />
+                }
+            ];
+
+            const filteredData = scheduleData.filter(item => {
+                if (activeRole === 'all') return true;
+                if (activeRole === 'student' && item.role === 'student') return true;
+                if (activeRole === 'student' && item.role === 'admin' && item.task.includes('公告')) return true;
+                if (activeRole === 'teacher' && item.role === 'teacher') return true;
+                if (activeRole === 'teacher' && item.role === 'admin' && (item.task.includes('公告') || item.task.includes('調查') || item.task.includes('匯入'))) return true;
+                if (activeRole === 'admin') return true;
+                return false;
+            });
+
+            const groupedData = filteredData.reduce((acc, item) => {
+                if (!acc[item.stage]) {
+                acc[item.stage] = [];
+                }
+                acc[item.stage].push(item);
+                return acc;
+            }, {});
+
+            const getThemeColor = () => {
+                switch (activeRole) {
+                case 'student': return 'bg-emerald-600';
+                case 'teacher': return 'bg-amber-600';
+                case 'admin': return 'bg-slate-700';
+                default: return 'bg-blue-600';
+                }
+            };
+
+            const getThemeLightColor = () => {
+                switch (activeRole) {
+                case 'student': return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                case 'teacher': return 'bg-amber-50 text-amber-800 border-amber-200';
+                case 'admin': return 'bg-slate-50 text-slate-800 border-slate-200';
+                default: return 'bg-blue-50 text-blue-800';
+                }
+            };
+
+            const handlePrint = () => {
+                window.print();
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-100 font-sans print:bg-white">
+                <div className="max-w-4xl mx-auto bg-white shadow-xl min-h-screen print:print-full">
+                    
+                    {/* Header - 根據角色變色 */}
+                    <div className={`${getThemeColor()} text-white p-8 print:p-4 print:text-black print:border-b-2 print:border-black`}>
+                    <div className="flex justify-between items-start">
+                        <div>
+                        <div className="flex items-center gap-2 text-white/80 print:text-black mb-2">
+                            <School size={18} />
+                            <span className="font-medium">桃園市立武陵高級中等學校</span>
+                        </div>
+                        <h1 className="text-3xl font-bold mb-2">115年 重補修作業時程表</h1>
+                        <p className="text-white/90 print:text-black flex items-center gap-2 text-lg">
+                            {activeRole === 'student' && <><GraduationCap size={20}/> 學生專用版</>}
+                            {activeRole === 'teacher' && <><BookOpen size={20}/> 教師專用版</>}
+                            {activeRole === 'admin' && <><FileText size={20}/> 行政總表</>}
+                        </p>
+                        </div>
+                        
+                        <div className="flex gap-3 no-print">
+                        {!isLocked && (
+                            <div className="bg-white/20 p-1 rounded-lg flex gap-1">
+                            <button onClick={() => setActiveRole('admin')} className={`px-3 py-1 rounded ${activeRole === 'admin' ? 'bg-white text-slate-800 shadow' : 'text-white hover:bg-white/10'}`}>行政</button>
+                            <button onClick={() => setActiveRole('teacher')} className={`px-3 py-1 rounded ${activeRole === 'teacher' ? 'bg-white text-amber-700 shadow' : 'text-white hover:bg-white/10'}`}>教師</button>
+                            <button onClick={() => setActiveRole('student')} className={`px-3 py-1 rounded ${activeRole === 'student' ? 'bg-white text-emerald-700 shadow' : 'text-white hover:bg-white/10'}`}>學生</button>
+                            </div>
+                        )}
+                        <button onClick={handlePrint} className="bg-white text-gray-800 p-2 rounded-lg shadow hover:bg-gray-100 flex items-center gap-2">
+                            <Printer size={18} /> <span className="hidden md:inline">列印本頁</span>
+                        </button>
+                        </div>
+                    </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-8 print:p-4 space-y-8">
+                    
+                    {/* Notice Box */}
+                    <div className={`p-4 rounded-lg border-l-4 ${getThemeLightColor()} print:border print:bg-transparent`}>
+                        <h3 className="font-bold flex items-center gap-2 mb-2">
+                        <AlertCircle size={18} />
+                        重要提醒
+                        </h3>
+                        <ul className="list-disc list-inside text-sm space-y-1 opacity-90">
+                        {activeRole === 'student' && (
+                            <React.Fragment>
+                            <li>系統開放時間為每日 09:00 至截止日 13:00，<strong className="underline">請務必注意「13:00」截止時間</strong>。</li>
+                            <li>未參加「預選」者，不得參加後續報名。</li>
+                            <li><strong>實體上課請務必穿著制服</strong>；線上 Meeting 不需穿著制服，但請開啟鏡頭。</li>
+                            </React.Fragment>
+                        )}
+                        {activeRole === 'teacher' && (
+                            <React.Fragment>
+                            <li>請留意「成績繳交」期限，以免影響學生畢業資格審查。</li>
+                            <li>自學輔導 Meeting 請務必截圖留存，作為教學日誌佐證。</li>
+                            </React.Fragment>
+                        )}
+                        {activeRole === 'admin' && (
+                            <React.Fragment>
+                            <li>本表為行政總表，含所有內部作業時程。</li>
+                            <li>請注意系統開關時間設定（12:00/13:00）。</li>
+                            </React.Fragment>
+                        )}
+                        </ul>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="space-y-8">
+                        {Object.keys(groupedData).map((stage, index) => (
+                        <div key={index} className="print:break-inside-avoid">
+                            <h2 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4 flex items-center gap-2">
+                            <span className={`w-2 h-6 rounded ${activeRole === 'student' ? 'bg-emerald-500' : activeRole === 'teacher' ? 'bg-amber-500' : 'bg-slate-500'}`}></span>
+                            {stage}
+                            </h2>
+                            
+                            <div className="space-y-4">
+                            {groupedData[stage].map((item) => (
+                                <div key={item.id} className={`flex gap-4 p-3 rounded-lg border transition-all
+                                ${item.type === 'critical' ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100 hover:border-gray-300'}
+                                print:border-gray-300 print:bg-white
+                                `}>
+                                {/* Date Box */}
+                                <div className="w-32 shrink-0 pt-1">
+                                    <div className="font-bold text-gray-700 flex flex-col">
+                                    <span className="text-sm text-gray-500 flex items-center gap-1"><Calendar size={12}/> 日期</span>
+                                    <span>{item.date}</span>
+                                    {item.endDate && (
+                                        <React.Fragment>
+                                        <span className="text-xs text-gray-400 text-center">|</span>
+                                        <span className="text-red-600">{item.endDate}</span>
+                                        </React.Fragment>
+                                    )}
+                                    </div>
+                                </div>
+
+                                {/* Content Box */}
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                    {item.type === 'critical' && (
+                                        <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded font-bold print:border print:border-red-500">
+                                        重要
+                                        </span>
+                                    )}
+                                    {item.type === 'meeting' && (
+                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded font-bold print:border print:border-purple-500">
+                                        Meeting
+                                        </span>
+                                    )}
+                                    </div>
+                                    <h3 className={`font-bold text-lg ${item.type === 'critical' ? 'text-red-700' : 'text-gray-800'}`}>
+                                    {item.task}
+                                    </h3>
+                                    {item.detail && (
+                                    <p className="text-gray-600 text-sm mt-1 leading-relaxed">
+                                        {item.detail}
+                                    </p>
+                                    )}
+                                </div>
+                                </div>
+                            ))}
+                            </div>
+                        </div>
+                        ))}
+                    </div>
+
+                    <div className="text-center text-gray-400 text-sm py-8 border-t mt-8 print:text-xs">
+                        <p>最後更新日期：{new Date().toLocaleDateString()}</p>
+                        <p className="no-print mt-2 text-xs bg-gray-100 inline-block px-3 py-1 rounded">
+                        網頁連結參數說明： ?role=student (學生版) | ?role=teacher (教師版) | ?role=admin (行政版)
+                        </p>
+                    </div>
+
+                    </div>
+                </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<SmartScheduleApp />);
+    </script>
+</body>
+</html>
