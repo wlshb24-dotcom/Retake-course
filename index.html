@@ -137,6 +137,14 @@
                 <rect width="12" height="8" x="6" y="14"/>
             </IconBase>
         );
+        
+        // 新增 CreditCard 圖示
+        const CreditCard = (props) => (
+            <IconBase {...props}>
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+            </IconBase>
+        );
         // --- 圖示元件結束 ---
 
 
@@ -196,26 +204,26 @@
                 },
                 {
                 id: 4,
-                stage: "第二階段：預選與判定 (5月)",
+                stage: "第二階段：選課確認與判定 (5月)",
                 date: "5/18 (一) 09:00 - 5/22 (五) 23:59",
                 role: "student",
-                task: "【重要】選課意願確認 (預選)",
-                detail: "未參加預選者，視同放棄正式報名資格。此為判定開專班或自學班之重要依據。",
+                task: "【重要】選課意願確認",
+                detail: "未參加選課確認者，視同放棄正式報名資格。此為判定開專班或自學班之重要依據。",
                 type: "critical",
                 icon: <CheckCircle size={18} />
                 },
                 {
                 id: 5,
-                stage: "第二階段：預選與判定 (5月)",
+                stage: "第二階段：選課確認與判定 (5月)",
                 date: "5/18 - 5/22",
                 role: "admin",
-                task: "彙整預選名單與判定開班型態",
+                task: "彙整選課確認名單與判定開班型態",
                 detail: "專班(15人+) / 自學輔導(6-14人) / 特殊開班",
                 icon: <Users size={18} />
                 },
                 {
                 id: 6,
-                stage: "第二階段：預選與判定 (5月)",
+                stage: "第二階段：選課確認與判定 (5月)",
                 date: "5/21 (四)",
                 role: "admin",
                 task: "高三補考日",
@@ -223,8 +231,18 @@
                 icon: <School size={18} />
                 },
                 {
+                id: 70, // 新增：第一梯次出納開通
+                stage: "第二階段：選課確認與判定 (5月)",
+                date: "5/25 (一)",
+                role: "admin",
+                task: "【重要】通知出納組開通繳費帳號",
+                detail: "確保學生報名第一梯次後，系統能順利產出繳費單。",
+                type: "critical",
+                icon: <CreditCard size={18} />
+                },
+                {
                 id: 7,
-                stage: "第二階段：預選與判定 (5月)",
+                stage: "第二階段：選課確認與判定 (5月)",
                 date: "5/26 - 5/27",
                 role: "admin",
                 task: "匯入高三補考後名單及教師時間",
@@ -336,6 +354,16 @@
                 task: "高一二補考日",
                 detail: "注意成績結算時程",
                 icon: <School size={18} />
+                },
+                {
+                id: 170, // 新增：第二梯次出納開通
+                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
+                date: "7/14 (二)",
+                role: "admin",
+                task: "【重要】通知出納組開通繳費帳號",
+                detail: "針對第二梯次報名，請出納組設定收款帳號。",
+                type: "critical",
+                icon: <CreditCard size={18} />
                 },
                 {
                 id: 17,
@@ -523,7 +551,7 @@
                         {activeRole === 'student' && (
                             <React.Fragment>
                             <li>系統開放時間為每日 09:00 至截止日 13:00，<strong className="underline">請務必注意「13:00」截止時間</strong>。</li>
-                            <li>未參加「預選」者，不得參加後續報名。</li>
+                            <li>未參加「選課確認」者，不得參加後續報名。</li>
                             <li><strong>實體上課請務必穿著制服</strong>；線上 Meeting 不需穿著制服，但請開啟鏡頭。</li>
                             </React.Fragment>
                         )}
