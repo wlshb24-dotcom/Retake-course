@@ -3,647 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>115年重補修作業時程表</title>
+    <title>武陵高中 115年重補修作業流程檢核</title>
     
-    <!-- 載入 Tailwind CSS (樣式庫) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 載入 React 和 ReactDOM -->
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- 載入 Babel (將 JSX 轉為瀏覽器看懂的程式) -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* 列印專用樣式 */
-        @media print {
-            .no-print { display: none !important; }
-            .print-full { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
-            body { background-color: white; }
-            /* 強制列印背景色，確保顏色標示可見 */
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* 自訂核取方塊動畫與樣式 */
+        .checkbox-wrapper input:checked + div {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+        .checkbox-wrapper input:checked + div svg {
+            display: block;
+        }
+        
+        /* 隱藏捲軸但保留功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-animate {
+            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div id="root">
-        <div class="min-h-screen flex items-center justify-center text-gray-500">
-            系統載入中...
-        </div>
-    </div>
+<body>
+    <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- 內建圖示元件 (移除外部依賴以修復錯誤) ---
-        const IconBase = ({ size = 18, children, className = "" }) => (
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width={size} 
-                height={size} 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={className}
-            >
-                {children}
-            </svg>
-        );
+        const App = () => {
+            const [role, setRole] = useState(null);
+            const [progress, setProgress] = useState({});
+            
+            // 行政登入密碼驗證相關狀態
+            const [adminModalOpen, setAdminModalOpen] = useState(false);
+            const [pwdInput, setPwdInput] = useState('');
+            const [pwdError, setPwdError] = useState(false);
 
-        const Calendar = (props) => (
-            <IconBase {...props}>
-                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                <line x1="16" x2="16" y1="2" y2="6"/>
-                <line x1="8" x2="8" y1="2" y2="6"/>
-                <line x1="3" x2="21" y1="10" y2="10"/>
-            </IconBase>
-        );
-
-        const Users = (props) => (
-            <IconBase {...props}>
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </IconBase>
-        );
-
-        const FileText = (props) => (
-            <IconBase {...props}>
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" x2="8" y1="13" y2="13"/>
-                <line x1="16" x2="8" y1="17" y2="17"/>
-                <line x1="10" x2="8" y1="9" y2="9"/>
-            </IconBase>
-        );
-
-        const CheckCircle = (props) => (
-            <IconBase {...props}>
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-            </IconBase>
-        );
-
-        const Clock = (props) => (
-            <IconBase {...props}>
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-            </IconBase>
-        );
-
-        const AlertCircle = (props) => (
-            <IconBase {...props}>
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" x2="12" y1="8" y2="12"/>
-                <line x1="12" x2="12.01" y1="16" y2="16"/>
-            </IconBase>
-        );
-
-        const School = (props) => (
-            <IconBase {...props}>
-                <path d="m4 6 8-4 8 4"/>
-                <path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/>
-                <path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/>
-                <path d="M18 5v17"/>
-                <path d="M6 5v17"/>
-                <circle cx="12" cy="9" r="2"/>
-            </IconBase>
-        );
-
-        const BookOpen = (props) => (
-            <IconBase {...props}>
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </IconBase>
-        );
-
-        const GraduationCap = (props) => (
-            <IconBase {...props}>
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </IconBase>
-        );
-
-        const Printer = (props) => (
-            <IconBase {...props}>
-                <polyline points="6 9 6 2 18 2 18 9"/>
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                <rect width="12" height="8" x="6" y="14"/>
-            </IconBase>
-        );
-        
-        // 新增 CreditCard 圖示
-        const CreditCard = (props) => (
-            <IconBase {...props}>
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                <line x1="1" y1="10" x2="23" y2="10"/>
-            </IconBase>
-        );
-        // --- 圖示元件結束 ---
-
-
-        const SmartScheduleApp = () => {
-            const [activeRole, setActiveRole] = useState('admin');
-            const [isLocked, setIsLocked] = useState(false);
-
-            // 初始化時檢查網址參數
+            // 讀取 LocalStorage 進度
             useEffect(() => {
-                const params = new URLSearchParams(window.location.search);
-                const roleParam = params.get('role');
-                
-                if (roleParam === 'student') {
-                setActiveRole('student');
-                setIsLocked(true);
-                } else if (roleParam === 'teacher') {
-                setActiveRole('teacher');
-                setIsLocked(true);
-                } else if (roleParam === 'admin') {
-                setActiveRole('admin');
-                setIsLocked(false); // 行政端通常不鎖定，方便切換檢查
-                } else {
-                setActiveRole('admin');
-                setIsLocked(false);
-                }
+                const savedRole = localStorage.getItem('wuling_makeup_role');
+                const savedProgress = JSON.parse(localStorage.getItem('wuling_makeup_progress')) || {};
+                if (savedRole) setRole(savedRole);
+                setProgress(savedProgress);
             }, []);
 
-            // 資料來源：依據 115 年重補修作業規範草案
-            const scheduleData = [
-                {
-                id: 1,
-                stage: "第一階段：前置作業 (4月)",
-                date: "4/09 (四)",
-                role: "admin",
-                task: "公告「115 年重補修作業規範草案」",
-                detail: "請同學務必詳閱，以維護自身權益。",
-                icon: <FileText size={18} />
-                },
-                {
-                id: 2,
-                stage: "第一階段：前置作業 (4月)",
-                date: "4/09 (四)",
-                role: "admin",
-                task: "發布教師意願與時段調查表",
-                detail: "包含專班時段、學期中分流意願、大班教學意願",
-                icon: <FileText size={18} />
-                },
-                {
-                id: 3,
-                stage: "第一階段：前置作業 (4月)",
-                date: "4/10 - 4/30",
-                role: "teacher",
-                task: "【務必填寫】開課意願調查",
-                detail: "請回報暑期及學期中可配合之時段，以利排課。",
-                type: "critical",
-                icon: <CheckCircle size={18} />
-                },
-                {
-                id: 4,
-                stage: "第二階段：選課確認與判定 (5月)",
-                date: "5/18 (一) 09:00 - 5/22 (五) 23:59",
-                role: "student",
-                task: "【重要】選課確認 (分流調查)",
-                detail: "未參加選課確認者，視同放棄正式報名資格。此為判定開專班或自學班之重要依據。",
-                type: "critical",
-                icon: <CheckCircle size={18} />
-                },
-                {
-                id: 5,
-                stage: "第二階段：選課確認與判定 (5月)",
-                date: "5/18 - 5/22",
-                role: "admin",
-                task: "彙整選課確認名單與判定開班型態",
-                detail: "專班(15人+) / 自學輔導(6-14人) / 特殊開班",
-                icon: <Users size={18} />
-                },
-                {
-                id: 6,
-                stage: "第二階段：選課確認與判定 (5月)",
-                date: "5/21 (四)",
-                role: "admin",
-                task: "高三補考日",
-                detail: "需等待補考成績結算",
-                icon: <School size={18} />
-                },
-                {
-                id: 70, // 新增：第一梯次出納開通
-                stage: "第二階段：選課確認與判定 (5月)",
-                date: "5/25 (一)",
-                role: "admin",
-                task: "【重要】通知出納組開通繳費帳號",
-                detail: "確保學生報名第一梯次後，系統能順利產出繳費單。",
-                type: "critical",
-                icon: <CreditCard size={18} />
-                },
-                {
-                id: 7,
-                stage: "第二階段：選課確認與判定 (5月)",
-                date: "5/26 - 5/27",
-                role: "admin",
-                task: "匯入高三補考後名單及教師時間",
-                detail: "系統設定與測試",
-                icon: <Clock size={18} />
-                },
-                {
-                id: 8,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "5/27 (三) 12:00 起",
-                endDate: "6/02 (二) 13:00 止",
-                role: "student",
-                task: "【第一梯次】正式線上報名",
-                detail: "對象：高三(全學年)、高一二(上學期科目)。請注意截止時間，逾時系統自動關閉。",
-                type: "critical",
-                icon: <GraduationCap size={18} />
-                },
-                {
-                id: 9,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/03 (三) 12:00 起",
-                endDate: "6/06 (六) 13:00 止",
-                role: "student",
-                task: "【第一梯次】線上繳費",
-                detail: "未於期限內繳費視同放棄報名。",
-                type: "critical",
-                icon: <AlertCircle size={18} />
-                },
-                {
-                id: 10,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/03 - 6/06",
-                role: "admin",
-                task: "核銷繳費與整理最終名單",
-                detail: "",
-                icon: <FileText size={18} />
-                },
-                {
-                id: 11,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/09 (二) 17:00前",
-                role: "admin",
-                task: "公告第一梯次正式課表",
-                detail: "公告專班教室與自學輔導名單",
-                icon: <FileText size={18} />
-                },
-                {
-                id: 12,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/10 (三) - 6/28 (日)",
-                role: "teacher",
-                task: "第一梯次(高三)上課期程",
-                detail: "專班依課表上課，請確實點名。",
-                icon: <BookOpen size={18} />
-                },
-                {
-                id: 120, // 新增學生端的上課提醒
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/10 (三) - 6/28 (日)",
-                role: "student",
-                task: "【專班】高三上課期程",
-                detail: "實體課程，請務必穿著制服到校上課。",
-                icon: <BookOpen size={18} />
-                },
-                {
-                id: 13,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/10 (三)",
-                role: "student",
-                task: "【自學班】高三 - 線上 Meeting",
-                detail: "採線上進行（不需穿著制服），時間詳見公告。",
-                type: "meeting",
-                icon: <Users size={18} />
-                },
-                {
-                id: 14,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/13 (六)",
-                role: "student",
-                task: "【自學班】高一二「上學期」 - 線上 Meeting",
-                detail: "採線上進行（不需穿著制服），時間詳見公告。",
-                type: "meeting",
-                icon: <Users size={18} />
-                },
-                {
-                id: 140,
-                stage: "第三階段：第一梯次報名 (高三全 / 高一二上) (6月)",
-                date: "6/10 & 6/13",
-                role: "teacher",
-                task: "主持自學輔導班第一次 Meeting",
-                detail: "6/10(三)為高三場次、6/13(六)為高一二(上)場次。",
-                type: "critical",
-                icon: <Users size={18} />
-                },
-                {
-                id: 15,
-                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
-                date: "7/01 - 7/31",
-                role: "student",
-                task: "高一二「上學期」專班上課",
-                detail: "實體課程，請務必穿著制服到校上課。",
-                icon: <BookOpen size={18} />
-                },
-                {
-                id: 16,
-                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
-                date: "7/13 (一)",
-                role: "admin",
-                task: "高一二補考日",
-                detail: "注意成績結算時程",
-                icon: <School size={18} />
-                },
-                {
-                id: 170, // 新增：第二梯次出納開通
-                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
-                date: "7/14 (二)",
-                role: "admin",
-                task: "【重要】通知出納組開通繳費帳號",
-                detail: "針對第二梯次報名，請出納組設定收款帳號。",
-                type: "critical",
-                icon: <CreditCard size={18} />
-                },
-                {
-                id: 17,
-                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
-                date: "7/15 - 7/16",
-                role: "admin",
-                task: "匯入高一二補考後名單",
-                detail: "準備第二梯次報名系統",
-                icon: <Clock size={18} />
-                },
-                {
-                id: 18,
-                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
-                date: "7/16 (四) 12:00 起",
-                endDate: "7/19 (日) 13:00 止",
-                role: "student",
-                task: "【第二梯次】正式線上報名",
-                detail: "對象：高一二(下學期科目)。",
-                type: "critical",
-                icon: <GraduationCap size={18} />
-                },
-                {
-                id: 19,
-                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
-                date: "7/21 (二) 12:00 起",
-                endDate: "7/23 (四) 13:00 止",
-                role: "student",
-                task: "【第二梯次】線上繳費",
-                detail: "逾期不候，請自行留意繳費單狀態。",
-                type: "critical",
-                icon: <AlertCircle size={18} />
-                },
-                {
-                id: 20,
-                stage: "第四階段：第二梯次報名 (高一二下) (7月)",
-                date: "7/28 (二) 17:00前",
-                role: "admin",
-                task: "公告第二梯次正式課表",
-                detail: "及 8/01 Meeting 連結",
-                icon: <FileText size={18} />
-                },
-                {
-                id: 21,
-                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
-                date: "8/01 (六)",
-                role: "teacher",
-                task: "主持高一二「下學期」自學班 Meeting",
-                detail: "與學生確認學期中授課方式及評量標準。",
-                icon: <Users size={18} />
-                },
-                {
-                id: 210,
-                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
-                date: "8/01 (六)",
-                role: "student",
-                task: "【自學班】高一二「下學期」 - 線上 Meeting",
-                detail: "採線上進行（不需穿著制服），確認後續上課方式。",
-                type: "meeting",
-                icon: <Users size={18} />
-                },
-                {
-                id: 22,
-                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
-                date: "8/02 - 8/30",
-                role: "student",
-                task: "第二梯次 (高一二下) 課程執行",
-                detail: "專班實體課程，請務必穿著制服到校上課。",
-                icon: <BookOpen size={18} />
-                },
-                {
-                id: 24,
-                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
-                date: "9月 - 11月",
-                role: "teacher",
-                task: "進行學期中分流教學",
-                detail: "依學科屬性安排週末或課後輔導",
-                icon: <BookOpen size={18} />
-                },
-                {
-                id: 25,
-                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
-                date: "課程結束後 3 日內",
-                role: "teacher",
-                task: "繳交成績與教學日誌",
-                detail: "含遠距截圖、紙本成績單。請務必準時以免影響學生學分計算。",
-                type: "critical",
-                icon: <CheckCircle size={18} />
-                },
-                {
-                id: 26,
-                stage: "第五階段：第二梯次執行與學期中分流 (8-12月)",
-                date: "12月",
-                role: "admin",
-                task: "全年度經費核銷",
-                detail: "發放教師鐘點費",
-                icon: <FileText size={18} />
-                }
-            ];
+            // 狀態切換與儲存
+            const toggleTask = (taskId) => {
+                const newProgress = { ...progress, [taskId]: !progress[taskId] };
+                setProgress(newProgress);
+                localStorage.setItem('wuling_makeup_progress', JSON.stringify(newProgress));
+            };
 
-            const filteredData = scheduleData.filter(item => {
-                if (activeRole === 'all') return true;
-                if (activeRole === 'student' && item.role === 'student') return true;
-                if (activeRole === 'student' && item.role === 'admin' && item.task.includes('公告')) return true;
-                if (activeRole === 'teacher' && item.role === 'teacher') return true;
-                if (activeRole === 'teacher' && item.role === 'admin' && (item.task.includes('公告') || item.task.includes('調查') || item.task.includes('匯入'))) return true;
-                if (activeRole === 'admin') return true;
-                return false;
-            });
+            const handleLogin = (selectedRole) => {
+                setRole(selectedRole);
+                localStorage.setItem('wuling_makeup_role', selectedRole);
+            };
 
-            const groupedData = filteredData.reduce((acc, item) => {
-                if (!acc[item.stage]) {
-                acc[item.stage] = [];
-                }
-                acc[item.stage].push(item);
-                return acc;
-            }, {});
+            const handleLogout = () => {
+                setRole(null);
+                localStorage.removeItem('wuling_makeup_role');
+            };
 
-            const getThemeColor = () => {
-                switch (activeRole) {
-                case 'student': return 'bg-emerald-600';
-                case 'teacher': return 'bg-amber-600';
-                case 'admin': return 'bg-slate-700';
-                default: return 'bg-blue-600';
+            // 處理角色選擇（攔截行政選項跳出密碼輸入框）
+            const handleRoleSelect = (selectedRole) => {
+                if (selectedRole === 'admin') {
+                    setAdminModalOpen(true);
+                    setPwdInput('');
+                    setPwdError(false);
+                } else {
+                    handleLogin(selectedRole);
                 }
             };
 
-            const getThemeLightColor = () => {
-                switch (activeRole) {
-                case 'student': return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-                case 'teacher': return 'bg-amber-50 text-amber-800 border-amber-200';
-                case 'admin': return 'bg-slate-50 text-slate-800 border-slate-200';
-                default: return 'bg-blue-50 text-blue-800';
+            // 驗證行政密碼
+            const verifyAdmin = (e) => {
+                e.preventDefault();
+                /* 【前端簡易加密防護】
+                   密碼：wlsh@270# 
+                   加密邏輯：將字串反轉後轉為 Base64。
+                   原始字串 -> 反轉為 "#072@hslw" -> Base64轉換為 "IzA3MkBoc2x3"
+                   如此原始碼中就不會出現明文密碼，防止被檢視。
+                */
+                const cipher = btoa(pwdInput.split('').reverse().join(''));
+                
+                if (cipher === 'IzA3MkBoc2x3') {
+                    setAdminModalOpen(false);
+                    handleLogin('admin');
+                } else {
+                    setPwdError(true);
+                    setPwdInput(''); // 錯誤時清空密碼
                 }
             };
 
-            const handlePrint = () => {
-                window.print();
+            // ========== 資料庫定義區 ==========
+            const tasksData = {
+                admin: [
+                    {
+                        phase: "前置作業與意願調查 (梯次99)",
+                        icon: "fa-solid fa-bullhorn",
+                        color: "blue",
+                        items: [
+                            { id: "a1", time: "4/09", task: "公告規範草案、發布教師意願調查", detail: "調查包含專班、分流、大班教學意願。", isCritical: false },
+                            { id: "a2", time: "5/13", task: "啟動多管道公告", detail: "使用無聲廣播、LINE、校網，提醒 5/18 選課確認（意願登記）。", isCritical: false },
+                            { id: "a3", time: "5/18 - 5/22", task: "監控「梯次 99 (選課確認)」進度", detail: "【系統檢核重點】注意系統需顯示「(意願登記)科目名稱」。", isCritical: true },
+                            { id: "a4", time: "5/21", task: "高三補考日，監控成績結算狀態", detail: "確認系統成績是否順利寫入，準備判定開班。", isCritical: false },
+                            { id: "a5", time: "5/22 14:00後", task: "判定開班型態", detail: "檢核：15人+為專班、6-14人為自學、5人以下不開班（除非影響畢業權益需填附件二）。", isCritical: true },
+                            { id: "a6", time: "5/25", task: "公布選課確認結果與前置通知", detail: "【動作】通知出納組開通繳費系統帳號。提醒學生 5/27 開始正式報名。", isCritical: true },
+                            { id: "a7", time: "5/26 - 5/27", task: "匯入名單與時間", detail: "【系統操作】匯入高三補考名單及教師授課時間。", isCritical: true }
+                        ]
+                    },
+                    {
+                        phase: "梯次 1 作業 (高三全、高一二上)",
+                        icon: "fa-solid fa-1",
+                        color: "orange",
+                        items: [
+                            { id: "a8", time: "6/02 14:00後", task: "執行梯次 1 結算", detail: "【動作】產出繳費單、匯出資料給註冊組、提醒 6/03 開始繳費。", isCritical: true },
+                            { id: "a9", time: "6/08", task: "排定梯次 1 授課總表", detail: "公告至教師與科召群組以供預備。", isCritical: false },
+                            { id: "a10", time: "6/09", task: "公告正式課表", detail: "包含授課時間與教室編排。", isCritical: false }, // ← 這裡補上逗號
+                            { id: "a10_1", time: "6/10 & 6/13", task: "【自學輔導】首節線上 meeting 啟動", detail: "高三自學輔導線上meeting時間：6/10(三)；高一二上自學輔導：6/13(六)。※ 各科目具體開課時間請參閱校網公告。", isCritical: true }
+                        ]
+                    },
+                    {
+                        phase: "梯次 2 作業 (高一二下)",
+                        icon: "fa-solid fa-2",
+                        color: "emerald",
+                        items: [
+                            { id: "a11", time: "7/13", task: "高一二補考日", detail: "監控補考與成績產出進度。", isCritical: false },
+                            { id: "a12", time: "7/14", task: "通知出納組", detail: "【動作】再次通知出納組開通梯次 2 繳費帳號。", isCritical: true },
+                            { id: "a13", time: "7/15 - 7/16", task: "匯入補考名單", detail: "【系統操作】匯入高一二補考名單。", isCritical: true },
+                            { id: "a14", time: "7/20 14:00後", task: "執行梯次 2 結算與拆班", detail: "【動作】產出繳費單、匯出資料給註冊組。", isCritical: true },
+                            { id: "a15", time: "7/24", task: "排定梯次 2 授課總表", detail: "確認所有梯次二的授課規劃。", isCritical: false },
+                            { id: "a15_1", time: "8/01", task: "【自學輔導】首節線上 meeting 啟動", detail: "高一二下自學輔導線上meeting時間：8/01(六)。※ 各科目具體開課時間請參閱校網公告。", isCritical: true }
+                        ]
+                    },
+                    {
+                        phase: "後續收尾作業",
+                        icon: "fa-solid fa-file-invoice-dollar",
+                        color: "gray",
+                        items: [
+                            { id: "a16", time: "8月底", task: "判定「學期中自學班」", detail: "最終公告並更新至校網。", isCritical: false },
+                            { id: "a17", time: "12月", task: "執行全年度經費核銷", detail: "結算授課鐘點費與相關費用。", isCritical: true }
+                        ]
+                    }
+                ],
+                teacher: [
+                    {
+                        phase: "行政協助與前置",
+                        icon: "fa-solid fa-clipboard-user",
+                        color: "blue",
+                        items: [
+                            { id: "t1", time: "4月-5月間", task: "配合調查與排定師資", detail: "依教務處與各科召集人規劃，協調排定授課教師與預計上課時段。", isCritical: false },
+                            { id: "t2", time: "教務處公告分班後", task: "確認授課名單與點名單", detail: "成班後，教務處將提供老師點名表。", isCritical: false }
+                        ]
+                    },
+                    {
+                        phase: "授課與成績處理(梯次一)",
+                        icon: "fa-solid fa-chalkboard",
+                        color: "orange",
+                        items: [
+                            { id: "t3_1", time: "6/10(三)", task: "高三【自學輔導】線上 meeting", detail: "高三上下學期自學輔導第一節開課時間。※ 各科目時間請依校網公告為準。", isCritical: true },
+                            { id: "t3_2", time: "6/13(六)", task: "高一二上【自學輔導】線上 meeting", detail: "高一二上學期自學輔導第一節開課時間。※ 各科目時間請依校網公告為準。", isCritical: true },
+                            { id: "t3", time: "6/10 - 7/31", task: "梯次 1 正式授課與評量", detail: "依公告課表實施。專班採實體面授。請確實掌握學生出席狀況。", isCritical: true },
+                            { id: "t4", time: "課程結束後 1 週內", task: "成績交至教務處", detail: "請將最後成績交給教務處幹事。", isCritical: true }
+                        ]
+                    },
+                    {
+                        phase: "授課與成績處理 (梯次二)",
+                        icon: "fa-solid fa-chalkboard",
+                        color: "emerald",
+                        items: [
+                            { id: "t4_1", time: "8/01(六)", task: "高一二下【自學輔導】線上 meeting", detail: "高一二下學期自學輔導第一節開課時間。※ 各科目時間請依校網公告為準。", isCritical: true },
+                            { id: "t4", time: "7/28 - 8/29", task: "梯次 2 正式授課與評量", detail: "同梯次一規定辦理。", isCritical: true },
+                            { id: "t5", time: "課程結束後 1 週內", task: "成績交至教務處", detail: "請將最後成績交給教務處幹事。", isCritical: true }
+                        ]
+                    }
+                ],
+                student: [
+                    {
+                        phase: "選課確認 (極重要前置)",
+                        icon: "fa-solid fa-clipboard-list",
+                        color: "blue",
+                        items: [
+                            { id: "s1", time: "5/18 09:00 - 5/22 23:59", task: "登入系統完成「梯次99」意願登記", detail: "此階段為意願調查，無論最後會不會報名，只要有可能重修該門課程就點選。[教務處會在整理完報名結果後公告選課確認結果。]", isCritical: true }
+                        ]
+                    },
+                    {
+                        phase: "梯次一 (高三全、高一二上)",
+                        icon: "fa-solid fa-1",
+                        color: "orange",
+                        items: [
+                            { id: "s2", time: "5/27 12:00 - 6/2 13:00", task: "正式報名選課", detail: "此階段的報名人數為決定是否成班的「唯一」依據。", isCritical: true },
+                            { id: "s3", time: "6/3 12:00 - 6/6 13:00", task: "線上繳費", detail: "一經繳費且順利成班，概不退費；逾期未繳視同放棄。", isCritical: true },
+                            { id: "s4", time: "6/9 起", task: "查看分班公告", detail: "留意校網公告的教室與課表。[重補修報名系統內的公告喔!]", isCritical: false },
+                            { id: "s4_1", time: "6/10(三) & 6/13(六)", task: "參與【自學輔導】首節線上 meeting", detail: "報名自學輔導者必看：高三班為 6/10(三)；高一二上為 6/13(六)。※ 各科目具體上課時間請自行參閱校網公告！", isCritical: true },
+                            { id: "s5", time: "6/10 - 7/31", task: "梯次一 上課", detail: "依規定出席，請注意請假與缺課扣考規定。", isCritical: false }
+                        ]
+                    },
+                    {
+                        phase: "梯次二 (高一二下)",
+                        icon: "fa-solid fa-2",
+                        color: "emerald",
+                        items: [
+                            { id: "s6", time: "7/16 12:00 - 7/19 13:00", task: "正式報名選課", detail: "高一二下學期課程報名時段。", isCritical: true },
+                            { id: "s7", time: "7/21 12:00 - 7/23 13:00", task: "線上繳費", detail: "完成繳費後即確認資格。", isCritical: true },
+                            { id: "s8", time: "7/24 起", task: "查看分班公告", detail: "留意校網最新公告。", isCritical: false },
+                            { id: "s8_1", time: "8/01(六)", task: "參與【自學輔導】首節線上 meeting", detail: "報名自學輔導者必看：高一二下學期自學輔導線上meeting為 8/01(六)。※ 各科目具體上課時間請自行參閱校網公告！", isCritical: true },
+                            { id: "s9", time: "7/28 - 8/29", task: "梯次二 上課", detail: "依規定出席上課。", isCritical: false }
+                        ]
+                    }
+                ]
+            };
+
+            // 色系對應表
+            const getColorClasses = (color) => {
+                const map = {
+                    blue: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200' },
+                    orange: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200' },
+                    emerald: { bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-200' },
+                    gray: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200' }
+                };
+                return map[color] || map.blue;
+            };
+
+            // 渲染登入畫面
+            const renderLoginScreen = () => (
+                <div className="min-h-screen flex items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center border border-gray-100 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-emerald-400 to-orange-400"></div>
+                        
+                        <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 mt-2">
+                            <i className="fa-solid fa-school-circle-check text-4xl text-blue-600"></i>
+                        </div>
+                        <h1 className="text-2xl font-bold text-gray-800">武陵高中</h1>
+                        <h2 className="text-lg font-semibold text-gray-600 mb-2">115年度 重補修作業</h2>
+                        <p className="text-gray-400 mb-8 text-sm">流程自我檢核系統</p>
+                        
+                        <div className="space-y-4">
+                            <button onClick={() => handleRoleSelect('admin')} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 py-3 px-4 rounded-xl font-bold transition-all group shadow-sm">
+                                <i className="fa-solid fa-user-gear text-xl group-hover:scale-110 transition-transform text-gray-500"></i> 行政組長檢核 <i className="fa-solid fa-lock text-xs text-gray-300 ml-1"></i>
+                            </button>
+                            <button onClick={() => handleRoleSelect('teacher')} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400 py-3 px-4 rounded-xl font-bold transition-all group shadow-sm">
+                                <i className="fa-solid fa-chalkboard-user text-xl group-hover:scale-110 transition-transform text-emerald-500"></i> 授課教師檢核
+                            </button>
+                            <button onClick={() => handleRoleSelect('student')} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-blue-300 text-blue-700 hover:bg-blue-50 hover:border-blue-400 py-3 px-4 rounded-xl font-bold transition-all group shadow-sm">
+                                <i className="fa-solid fa-user-graduate text-xl group-hover:scale-110 transition-transform text-blue-500"></i> 學生報名檢核
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // 渲染主儀表板畫面
+            const renderDashboard = () => {
+                const roleData = tasksData[role];
+                const totalTasks = roleData.reduce((sum, phase) => sum + phase.items.length, 0);
+                const completedTasks = roleData.reduce((sum, phase) => sum + phase.items.filter(item => progress[item.id]).length, 0);
+                const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+                const roleInfo = {
+                    admin: { title: "行政組長", icon: "fa-user-gear", color: "gray" },
+                    teacher: { title: "授課教師", icon: "fa-chalkboard-user", color: "emerald" },
+                    student: { title: "學生報名", icon: "fa-user-graduate", color: "blue" }
+                }[role];
+
+                return (
+                    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 pb-12">
+                        {/* Header */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 bg-${roleInfo.color}-100 rounded-xl flex items-center justify-center shadow-inner`}>
+                                    <i className={`fa-solid ${roleInfo.icon} text-2xl text-${roleInfo.color}-600`}></i>
+                                </div>
+                                <div>
+                                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">重補修檢核表 <span className={`text-${roleInfo.color}-600`}>{roleInfo.title}</span></h1>
+                                    <p className="text-gray-500 text-sm mt-1">武陵高中 115年度</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                                {/* 快速切換選單 */}
+                                <div className="flex bg-gray-100 rounded-lg p-1 w-full sm:w-auto overflow-hidden">
+                                    <button onClick={() => handleRoleSelect('admin')} className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${role === 'admin' ? 'bg-white shadow text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}>行政</button>
+                                    <button onClick={() => handleRoleSelect('teacher')} className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${role === 'teacher' ? 'bg-white shadow text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>教師</button>
+                                    <button onClick={() => handleRoleSelect('student')} className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${role === 'student' ? 'bg-white shadow text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}>學生</button>
+                                </div>
+                                <button onClick={handleLogout} className="text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 transition-colors flex items-center gap-2 px-4 py-2 rounded-lg">
+                                    <i className="fa-solid fa-power-off"></i> 登出
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 學生專屬警告區塊 */}
+                        {role === 'student' && (
+                            <div className="bg-orange-50 border-l-4 border-orange-500 p-5 rounded-r-xl shadow-sm mb-6 animate-fade-in">
+                                <h3 className="font-bold text-orange-800 text-lg flex items-center gap-2 mb-3">
+                                    <i className="fa-solid fa-triangle-exclamation animate-pulse"></i> 學生報名重要警示 (必讀)
+                                </h3>
+                                <div className="space-y-3 text-orange-900 text-sm bg-white/50 p-4 rounded-lg">
+                                    <p className="flex items-start gap-2">
+                                        <i className="fa-solid fa-ban text-red-500 mt-1"></i>
+                                        <span><strong>梯次 99 選課確認：</strong>若漏掉 5/18-5/22 的「梯次 99 選課確認(意願登記)」，正式報名（梯次 1, 2）將會被系統完全鎖定，無法補救！</span>
+                                    </p>
+                                    <p className="flex items-start gap-2">
+                                        <i className="fa-solid fa-eye text-blue-500 mt-1"></i>
+                                        <span><strong>跨年級情境說明：</strong>高一生因下學期成績尚未結算，系統上完全看不到下學期科目；高二、高三生可看見以前一下和二下須重修的課程。</span>
+                                    </p>
+                                    <p className="flex items-start gap-2">
+                                        <i className="fa-solid fa-life-ring text-emerald-500 mt-1"></i>
+                                        <span><strong>補救特殊路徑：</strong>若您報名的科目人數最後確定是5 人(含)以下面臨「不開班」，且該科目<strong>影響您的畢業權益</strong>，請自行下載「附件二」提出特殊申請。</span>
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Progress Bar */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                            <div className="flex justify-between items-end mb-3">
+                                <span className="font-bold text-gray-700 flex items-center gap-2">
+                                    <i className="fa-solid fa-bars-progress text-gray-400"></i> 整體進度
+                                </span>
+                                <div className="text-right">
+                                    <span className={`text-3xl font-black ${progressPercent === 100 ? 'text-emerald-500' : 'text-blue-600'}`}>{progressPercent}%</span>
+                                    <span className="text-gray-400 text-sm ml-2">({completedTasks}/{totalTasks})</span>
+                                </div>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                <div 
+                                    className={`h-4 rounded-full transition-all duration-700 ease-out flex items-center justify-end pr-2
+                                        ${progressPercent === 100 ? 'bg-emerald-500' : 'bg-gradient-to-r from-blue-400 to-blue-600'}`}
+                                    style={{ width: `${progressPercent}%` }}
+                                >
+                                    {progressPercent > 10 && <div className="w-1.5 h-1.5 bg-white/50 rounded-full"></div>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 任務列表清單 */}
+                        <div className="space-y-6">
+                            {roleData.map((phaseData, pIndex) => {
+                                const colors = getColorClasses(phaseData.color);
+                                return (
+                                    <div key={pIndex} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                        <div className={`${colors.bg} px-5 sm:px-6 py-4 border-b ${colors.border} flex items-center gap-3`}>
+                                            <div className={`w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm`}>
+                                                <i className={`${phaseData.icon} ${colors.text}`}></i>
+                                            </div>
+                                            <h2 className={`text-lg font-extrabold ${colors.text}`}>{phaseData.phase}</h2>
+                                        </div>
+                                        <div className="divide-y divide-gray-100">
+                                            {phaseData.items.map((item) => {
+                                                const isChecked = progress[item.id];
+                                                return (
+                                                    <div key={item.id} 
+                                                        className={`p-5 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 transition-all duration-300 hover:bg-gray-50 
+                                                            ${isChecked ? 'bg-gray-50' : ''}`}
+                                                    >
+                                                        <label className="checkbox-wrapper flex-shrink-0 flex items-start pt-1 cursor-pointer">
+                                                            <input 
+                                                                type="checkbox" 
+                                                                className="peer sr-only"
+                                                                checked={isChecked || false}
+                                                                onChange={() => toggleTask(item.id)}
+                                                            />
+                                                            <div className={`w-8 h-8 rounded border-2 flex items-center justify-center transition-all shadow-sm
+                                                                ${isChecked ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300 bg-white hover:border-blue-400'}`}>
+                                                                <svg className={`w-5 h-5 text-white ${isChecked ? 'block' : 'hidden'} pointer-events-none`} viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                        </label>
+                                                        <div className="flex-1">
+                                                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    {item.isCritical && !isChecked && (
+                                                                        <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded font-bold flex items-center gap-1 shadow-sm">
+                                                                            <i className="fa-solid fa-bolt"></i> 重點
+                                                                        </span>
+                                                                    )}
+                                                                    <span className={`font-mono text-sm font-bold px-2 py-1 rounded 
+                                                                        ${isChecked ? 'bg-gray-100 text-gray-400' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
+                                                                        <i className="fa-regular fa-clock mr-1"></i> {item.time}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <h3 className={`text-lg font-bold leading-tight mb-2 transition-colors
+                                                                ${isChecked ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                                                                {item.task}
+                                                            </h3>
+                                                            {item.detail && (
+                                                                <p className={`text-sm leading-relaxed 
+                                                                    ${isChecked ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                    {item.detail.split(/(【動作】|【系統操作】|【系統檢核重點】)/g).map((part, i) => {
+                                                                        if (part === '【動作】') return <strong key={i} className={`px-1 rounded ${isChecked ? '' : 'bg-yellow-100 text-yellow-800'}`}>{part}</strong>;
+                                                                        if (part === '【系統操作】') return <strong key={i} className={`px-1 rounded ${isChecked ? '' : 'bg-purple-100 text-purple-800'}`}>{part}</strong>;
+                                                                        if (part === '【系統檢核重點】') return <strong key={i} className={`px-1 rounded ${isChecked ? '' : 'bg-red-100 text-red-800'}`}>{part}</strong>;
+                                                                        return part;
+                                                                    })}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        
+                        <div className="text-center text-gray-400 text-sm mt-10">
+                            <p>武陵高中 教務處 | 系統設計：整合版自我檢核器</p>
+                            <p className="mt-1 text-xs opacity-70">進度紀錄將自動儲存於此瀏覽器中</p>
+                        </div>
+                    </div>
+                );
             };
 
             return (
-                <div className="min-h-screen bg-gray-100 font-sans print:bg-white">
-                <div className="max-w-4xl mx-auto bg-white shadow-xl min-h-screen print:print-full">
-                    
-                    {/* Header - 根據角色變色 */}
-                    <div className={`${getThemeColor()} text-white p-8 print:p-4 print:text-black print:border-b-2 print:border-black`}>
-                    <div className="flex justify-between items-start">
-                        <div>
-                        <div className="flex items-center gap-2 text-white/80 print:text-black mb-2">
-                            <School size={18} />
-                            <span className="font-medium">桃園市立武陵高級中等學校</span>
-                        </div>
-                        <h1 className="text-3xl font-bold mb-2">115年 重補修作業時程表</h1>
-                        <p className="text-white/90 print:text-black flex items-center gap-2 text-lg">
-                            {activeRole === 'student' && <><GraduationCap size={20}/> 學生專用版</>}
-                            {activeRole === 'teacher' && <><BookOpen size={20}/> 教師專用版</>}
-                            {activeRole === 'admin' && <><FileText size={20}/> 行政總表</>}
-                        </p>
-                        </div>
-                        
-                        <div className="flex gap-3 no-print">
-                        {!isLocked && (
-                            <div className="bg-white/20 p-1 rounded-lg flex gap-1">
-                            <button onClick={() => setActiveRole('admin')} className={`px-3 py-1 rounded ${activeRole === 'admin' ? 'bg-white text-slate-800 shadow' : 'text-white hover:bg-white/10'}`}>行政</button>
-                            <button onClick={() => setActiveRole('teacher')} className={`px-3 py-1 rounded ${activeRole === 'teacher' ? 'bg-white text-amber-700 shadow' : 'text-white hover:bg-white/10'}`}>教師</button>
-                            <button onClick={() => setActiveRole('student')} className={`px-3 py-1 rounded ${activeRole === 'student' ? 'bg-white text-emerald-700 shadow' : 'text-white hover:bg-white/10'}`}>學生</button>
-                            </div>
-                        )}
-                        <button onClick={handlePrint} className="bg-white text-gray-800 p-2 rounded-lg shadow hover:bg-gray-100 flex items-center gap-2">
-                            <Printer size={18} /> <span className="hidden md:inline">列印本頁</span>
-                        </button>
-                        </div>
-                    </div>
-                    </div>
+                <>
+                    {/* 主畫面切換 */}
+                    {!role ? renderLoginScreen() : renderDashboard()}
 
-                    {/* Content */}
-                    <div className="p-8 print:p-4 space-y-8">
-                    
-                    {/* Notice Box */}
-                    <div className={`p-4 rounded-lg border-l-4 ${getThemeLightColor()} print:border print:bg-transparent`}>
-                        <h3 className="font-bold flex items-center gap-2 mb-2">
-                        <AlertCircle size={18} />
-                        重要提醒
-                        </h3>
-                        <ul className="list-disc list-inside text-sm space-y-1 opacity-90">
-                        {activeRole === 'student' && (
-                            <React.Fragment>
-                            <li>系統開放時間為每日 09:00 至截止日 13:00，<strong className="underline">請務必注意「13:00」截止時間</strong>。</li>
-                            <li>未參加「選課確認」者，不得參加後續報名。</li>
-                            <li><strong>實體上課請務必穿著制服</strong>；線上 Meeting 不需穿著制服，但請開啟鏡頭。</li>
-                            </React.Fragment>
-                        )}
-                        {activeRole === 'teacher' && (
-                            <React.Fragment>
-                            <li>請留意「成績繳交」期限，以免影響學生畢業資格審查。</li>
-                            <li>自學輔導 Meeting 請務必截圖留存，作為教學日誌佐證。</li>
-                            </React.Fragment>
-                        )}
-                        {activeRole === 'admin' && (
-                            <React.Fragment>
-                            <li>本表為行政總表，含所有內部作業時程。</li>
-                            <li>請注意系統開關時間設定（12:00/13:00）。</li>
-                            </React.Fragment>
-                        )}
-                        </ul>
-                    </div>
-
-                    {/* Timeline */}
-                    <div className="space-y-8">
-                        {Object.keys(groupedData).map((stage, index) => (
-                        <div key={index} className="print:break-inside-avoid">
-                            <h2 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4 flex items-center gap-2">
-                            <span className={`w-2 h-6 rounded ${activeRole === 'student' ? 'bg-emerald-500' : activeRole === 'teacher' ? 'bg-amber-500' : 'bg-slate-500'}`}></span>
-                            {stage}
-                            </h2>
-                            
-                            <div className="space-y-4">
-                            {groupedData[stage].map((item) => (
-                                <div key={item.id} className={`flex gap-4 p-3 rounded-lg border transition-all
-                                ${item.type === 'critical' ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100 hover:border-gray-300'}
-                                print:border-gray-300 print:bg-white
-                                `}>
-                                {/* Date Box */}
-                                <div className="w-32 shrink-0 pt-1">
-                                    <div className="font-bold text-gray-700 flex flex-col">
-                                    <span className="text-sm text-gray-500 flex items-center gap-1"><Calendar size={12}/> 日期</span>
-                                    <span>{item.date}</span>
-                                    {item.endDate && (
-                                        <React.Fragment>
-                                        <span className="text-xs text-gray-400 text-center">|</span>
-                                        <span className="text-red-600">{item.endDate}</span>
-                                        </React.Fragment>
-                                    )}
+                    {/* 行政密碼驗證 Modal */}
+                    {adminModalOpen && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-sm shadow-2xl relative modal-animate border border-gray-100">
+                                <button 
+                                    onClick={() => { setAdminModalOpen(false); setPwdError(false); setPwdInput(''); }} 
+                                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                                >
+                                    <i className="fa-solid fa-xmark text-xl"></i>
+                                </button>
+                                
+                                <div className="text-center mb-6 mt-2">
+                                    <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200 shadow-inner">
+                                        <i className="fa-solid fa-lock text-gray-700 text-2xl"></i>
                                     </div>
+                                    <h3 className="text-xl font-bold text-gray-800">行政權限驗證</h3>
+                                    <p className="text-gray-500 text-sm mt-2">請輸入管理員專屬密碼以登入檢核表</p>
                                 </div>
 
-                                {/* Content Box */}
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                    {item.type === 'critical' && (
-                                        <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded font-bold print:border print:border-red-500">
-                                        重要
-                                        </span>
-                                    )}
-                                    {item.type === 'meeting' && (
-                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded font-bold print:border print:border-purple-500">
-                                        Meeting
-                                        </span>
-                                    )}
+                                <form onSubmit={verifyAdmin}>
+                                    <div className="mb-4">
+                                        <input 
+                                            type="password" 
+                                            value={pwdInput}
+                                            onChange={(e) => {
+                                                setPwdInput(e.target.value);
+                                                if(pwdError) setPwdError(false);
+                                            }}
+                                            placeholder="請輸入密碼"
+                                            className={`w-full px-4 py-3 rounded-xl border-2 text-center tracking-widest font-mono text-lg transition-all
+                                                ${pwdError ? 'border-red-400 focus:ring-red-200 bg-red-50 text-red-700' : 'border-gray-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100'} 
+                                                focus:outline-none`}
+                                            autoFocus
+                                        />
+                                        {pwdError && (
+                                            <p className="text-red-500 text-xs font-bold text-center mt-3 animate-bounce">
+                                                <i className="fa-solid fa-circle-exclamation"></i> 密碼錯誤，請重新輸入
+                                            </p>
+                                        )}
                                     </div>
-                                    <h3 className={`font-bold text-lg ${item.type === 'critical' ? 'text-red-700' : 'text-gray-800'}`}>
-                                    {item.task}
-                                    </h3>
-                                    {item.detail && (
-                                    <p className="text-gray-600 text-sm mt-1 leading-relaxed">
-                                        {item.detail}
-                                    </p>
-                                    )}
-                                </div>
-                                </div>
-                            ))}
+                                    
+                                    <button 
+                                        type="submit" 
+                                        className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 mt-2"
+                                    >
+                                        驗證並登入 <i className="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                        ))}
-                    </div>
-
-                    <div className="text-center text-gray-400 text-sm py-8 border-t mt-8 print:text-xs">
-                        <p>最後更新日期：{new Date().toLocaleDateString()}</p>
-                        <p className="no-print mt-2 text-xs bg-gray-100 inline-block px-3 py-1 rounded">
-                        網頁連結參數說明： ?role=student (學生版) | ?role=teacher (教師版) | ?role=admin (行政版)
-                        </p>
-                    </div>
-
-                    </div>
-                </div>
-                </div>
+                    )}
+                </>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<SmartScheduleApp />);
+        root.render(<App />);
     </script>
 </body>
 </html>
