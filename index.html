@@ -24,16 +24,7 @@
             background-color: #f3f4f6;
         }
 
-        /* 自訂核取方塊動畫與樣式 */
-        .checkbox-wrapper input:checked + div {
-            background-color: #10b981;
-            border-color: #10b981;
-        }
-        .checkbox-wrapper input:checked + div svg {
-            display: block;
-        }
-        
-        /* 隱藏捲軸但保留功能 */
+        /* 隱藏預設捲軸但保留滾動功能 */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -42,6 +33,23 @@
             scrollbar-width: none;
         }
 
+　　　　/* 自訂核取方塊動畫與樣式 */
+　　　　.checkbox-wrapper input:checked + div {
+    　　　　background-color: #10b981; /* 勾選後的綠色背景 */
+    　　　　border-color: #10b981;
+　　　　}
+
+　　　　.checkbox-wrapper input:checked + div svg {
+    　　　　display: block; /* 勾選後顯示打勾圖示 */
+　　　　}
+
+　　　　/* 讓滑鼠移入時有輕微的縮放感 (選配) */
+　　　　.checkbox-wrapper:hover .custom-checkbox {
+    　　　　transform: scale(1.05);
+    　　　　border-color: #10b981;
+　　　　}
+
+        /* 密碼彈窗動畫 */
         @keyframes modalFadeIn {
             from { opacity: 0; transform: translateY(-20px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
@@ -105,20 +113,22 @@
             // 驗證行政密碼
             const verifyAdmin = (e) => {
                 e.preventDefault();
-                /* 【前端簡易加密防護】
-                   密碼：wlsh@270# 
-                   加密邏輯：將字串反轉後轉為 Base64。
-                   原始字串 -> 反轉為 "#072@hslw" -> Base64轉換為 "IzA3MkBoc2x3"
-                   如此原始碼中就不會出現明文密碼，防止被檢視。
-                */
-                const cipher = btoa(pwdInput.split('').reverse().join(''));
-                
-                if (cipher === 'IzA3MkBoc2x3') {
-                    setAdminModalOpen(false);
-                    handleLogin('admin');
-                } else {
+                try {
+                    /* 加密邏輯：將字串反轉後轉為 Base64
+                       原始字串 wlsh@270# -> 反轉 "#072@hslw" -> Base64轉換 "IzA3MkBoc2x3" */
+                    const cipher = btoa(pwdInput.split('').reverse().join(''));
+                    
+                    if (cipher === 'IzA3MkBoc2x3') {
+                        setAdminModalOpen(false);
+                        handleLogin('admin');
+                    } else {
+                        setPwdError(true);
+                        setPwdInput(''); // 錯誤時清空密碼
+                    }
+                } catch (err) {
+                    // 捕捉輸入中文字元導致的 btoa 崩潰錯誤，視同密碼錯誤
                     setPwdError(true);
-                    setPwdInput(''); // 錯誤時清空密碼
+                    setPwdInput('');
                 }
             };
 
@@ -132,7 +142,7 @@
                         items: [
                             { id: "a1", time: "4/09", task: "公告規範草案、發布教師意願調查", detail: "調查包含專班、分流、大班教學意願。", isCritical: false },
                             { id: "a2", time: "5/13", task: "啟動多管道公告", detail: "使用無聲廣播、LINE、校網，提醒 5/18 選課確認（意願登記）。", isCritical: false },
-                            { id: "a3", time: "5/18 - 5/22", task: "監控「梯次 99 (選課確認)」進度", detail: "【系統檢核重點】注意系統需顯示「(意願登記)科目名稱」。", isCritical: true },
+                            { id: "a3", time: "5/18 - 5/22", task: "監控「梯次 99 (選課確認)」進度", detail: "【系統檢核重點】注意系統需顯示「(意願登記)科目名稱」。檢核重點：確認系統科目名稱是否正確顯示為 (意願登記)科目名稱", isCritical: true },
                             { id: "a4", time: "5/21", task: "高三補考日，監控成績結算狀態", detail: "確認系統成績是否順利寫入，準備判定開班。", isCritical: false },
                             { id: "a5", time: "5/22 14:00後", task: "判定開班型態", detail: "檢核：15人+為專班、6-14人為自學、5人以下不開班（除非影響畢業權益需填附件二）。", isCritical: true },
                             { id: "a6", time: "5/25", task: "公布選課確認結果與前置通知", detail: "【動作】通知出納組開通繳費系統帳號。提醒學生 5/27 開始正式報名。", isCritical: true },
@@ -146,7 +156,7 @@
                         items: [
                             { id: "a8", time: "6/02 14:00後", task: "執行梯次 1 結算", detail: "【動作】產出繳費單、匯出資料給註冊組、提醒 6/03 開始繳費。", isCritical: true },
                             { id: "a9", time: "6/08", task: "排定梯次 1 授課總表", detail: "公告至教師與科召群組以供預備。", isCritical: false },
-                            { id: "a10", time: "6/09", task: "公告正式課表", detail: "包含授課時間與教室編排。", isCritical: false }, // ← 這裡補上逗號
+                            { id: "a10", time: "6/09", task: "公告正式課表", detail: "包含授課時間與教室編排。", isCritical: false },
                             { id: "a10_1", time: "6/10 & 6/13", task: "【自學輔導】首節線上 meeting 啟動", detail: "高三自學輔導線上meeting時間：6/10(三)；高一二上自學輔導：6/13(六)。※ 各科目具體開課時間請參閱校網公告。", isCritical: true }
                         ]
                     },
@@ -159,7 +169,7 @@
                             { id: "a12", time: "7/14", task: "通知出納組", detail: "【動作】再次通知出納組開通梯次 2 繳費帳號。", isCritical: true },
                             { id: "a13", time: "7/15 - 7/16", task: "匯入補考名單", detail: "【系統操作】匯入高一二補考名單。", isCritical: true },
                             { id: "a14", time: "7/20 14:00後", task: "執行梯次 2 結算與拆班", detail: "【動作】產出繳費單、匯出資料給註冊組。", isCritical: true },
-                            { id: "a15", time: "7/24", task: "排定梯次 2 授課總表", detail: "確認所有梯次二的授課規劃。(7/28前要公告)", isCritical: false },
+                            { id: "a15", time: "7/24", task: "排定梯次 2 授課總表", detail: "確認所有梯次二的授課規劃。", isCritical: false },
                             { id: "a15_1", time: "8/01", task: "【自學輔導】首節線上 meeting 啟動", detail: "高一二下自學輔導線上meeting時間：8/01(六)。※ 各科目具體開課時間請參閱校網公告。", isCritical: true }
                         ]
                     },
@@ -179,19 +189,18 @@
                         icon: "fa-solid fa-clipboard-user",
                         color: "blue",
                         items: [
-                            { id: "t1", time: "4月-5月間", task: "配合調查與排定師資", detail: "依教務處與各科召集人規劃，協調排定授課教師與預計上課時段。", isCritical: false },
+                            { id: "t1", time: "4月底前", task: "配合調查與排定師資", detail: "依教務處與各科召集人規劃，協調排定授課教師與預計上課時段。", isCritical: false },
                             { id: "t2", time: "教務處公告分班後", task: "確認授課名單與點名單", detail: "成班後，教務處將提供老師點名表。", isCritical: false }
                         ]
                     },
                     {
-                        phase: "授課與成績處理(梯次一)",
+                        phase: "授課與成績處理 (梯次一)",
                         icon: "fa-solid fa-chalkboard",
                         color: "orange",
                         items: [
                             { id: "t3_1", time: "6/10(三)", task: "高三【自學輔導】線上 meeting", detail: "高三上下學期自學輔導第一節開課時間。※ 各科目時間請依校網公告為準。", isCritical: true },
                             { id: "t3_2", time: "6/13(六)", task: "高一二上【自學輔導】線上 meeting", detail: "高一二上學期自學輔導第一節開課時間。※ 各科目時間請依校網公告為準。", isCritical: true },
-                            { id: "t3", time: "6/10 - 7/31", task: "梯次 1 正式授課與評量", detail: "依公告課表實施。專班採實體面授。請確實掌握學生出席狀況。", isCritical: true },
-                            { id: "t4", time: "課程結束後 1 週內", task: "成績交至教務處", detail: "請將最後成績交給教務處幹事。", isCritical: true }
+                            { id: "t3", time: "6/10 - 7/31", task: "梯次 1 正式授課與評量", detail: "依公告課表實施。專班採實體面授。請確實掌握學生出席狀況。", isCritical: true }
                         ]
                     },
                     {
@@ -200,7 +209,7 @@
                         color: "emerald",
                         items: [
                             { id: "t4_1", time: "8/01(六)", task: "高一二下【自學輔導】線上 meeting", detail: "高一二下學期自學輔導第一節開課時間。※ 各科目時間請依校網公告為準。", isCritical: true },
-                            { id: "t4", time: "8/01 - 8/30", task: "梯次 2 正式授課與評量", detail: "同梯次一規定辦理。", isCritical: true },
+                            { id: "t4", time: "08/01 - 08/30", task: "梯次 2 正式授課與評量", detail: "同梯次一規定辦理。", isCritical: true },
                             { id: "t5", time: "課程結束後 1 週內", task: "成績交至教務處", detail: "請將最後成績交給教務處幹事。", isCritical: true }
                         ]
                     }
@@ -211,7 +220,7 @@
                         icon: "fa-solid fa-clipboard-list",
                         color: "blue",
                         items: [
-                            { id: "s1", time: "5/18 09:00 - 5/22 23:59", task: "登入系統完成「梯次99」意願登記", detail: "此階段為意願調查，無論最後會不會報名，只要有可能重修該門課程就點選。[教務處會在整理完報名結果後公告選課確認結果。]", isCritical: true }
+                            { id: "s1", time: "5/18 09:00 - 5/22 23:59", task: "登入系統完成『梯次99』意願登記 (未確認視作放棄報名重補修)", detail: "此階段為意願調查，無論最後會不會報名，只要有可能重修該門課程就點選。[教務處會在整理完報名結果後公告選課確認結果。]", isCritical: true }
                         ]
                     },
                     {
@@ -221,7 +230,7 @@
                         items: [
                             { id: "s2", time: "5/27 12:00 - 6/2 13:00", task: "正式報名選課", detail: "此階段的報名人數為決定是否成班的「唯一」依據。", isCritical: true },
                             { id: "s3", time: "6/3 12:00 - 6/6 13:00", task: "線上繳費", detail: "一經繳費且順利成班，概不退費；逾期未繳視同放棄。", isCritical: true },
-                            { id: "s4", time: "6/9 起", task: "查看分班公告", detail: "留意校網公告的教室與課表。[重補修報名系統內的公告喔!]", isCritical: false },
+                            { id: "s4", time: "6/9 17:00 前", task: "查看分班公告", detail: "留意重補修系統公告的教室與課表。", isCritical: false },
                             { id: "s4_1", time: "6/10(三) & 6/13(六)", task: "參與【自學輔導】首節線上 meeting", detail: "報名自學輔導者必看：高三班為 6/10(三)；高一二上為 6/13(六)。※ 各科目具體上課時間請自行參閱校網公告！", isCritical: true },
                             { id: "s5", time: "6/10 - 7/31", task: "梯次一 上課", detail: "依規定出席，請注意請假與缺課扣考規定。", isCritical: false }
                         ]
@@ -233,9 +242,9 @@
                         items: [
                             { id: "s6", time: "7/16 12:00 - 7/19 13:00", task: "正式報名選課", detail: "高一二下學期課程報名時段。", isCritical: true },
                             { id: "s7", time: "7/21 12:00 - 7/23 13:00", task: "線上繳費", detail: "完成繳費後即確認資格。", isCritical: true },
-                            { id: "s8", time: "7/28 17:00 起", task: "查看分班公告", detail: "留意校網最新公告。", isCritical: false },
+                            { id: "s8", time: "7/28 17:00起", task: "查看分班公告", detail: "留意重補修系統最新公告。", isCritical: false },
                             { id: "s8_1", time: "8/01(六)", task: "參與【自學輔導】首節線上 meeting", detail: "報名自學輔導者必看：高一二下學期自學輔導線上meeting為 8/01(六)。※ 各科目具體上課時間請自行參閱校網公告！", isCritical: true },
-                            { id: "s9", time: "8/01 - 8/30", task: "梯次二 上課", detail: "依規定出席上課。", isCritical: false }
+                            { id: "s9", time: "08/01 - 08/30", task: "梯次二 上課", detail: "依規定出席上課。若轉為自學輔導且老師有特定要求，上課時間可能移至新學期 (9-11月)，請務必以重補修系統最終公告課表為準，勿僅依據系統預設時間。", isCritical: false }
                         ]
                     }
                 ]
@@ -288,9 +297,9 @@
                 const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
                 const roleInfo = {
-                    admin: { title: "行政組長", icon: "fa-user-gear", color: "gray" },
-                    teacher: { title: "授課教師", icon: "fa-chalkboard-user", color: "emerald" },
-                    student: { title: "學生報名", icon: "fa-user-graduate", color: "blue" }
+                    admin: { title: "行政組長", icon: "fa-user-gear", bgTheme: "bg-gray-100", textTheme: "text-gray-600" },
+                    teacher: { title: "授課教師", icon: "fa-chalkboard-user", bgTheme: "bg-emerald-100", textTheme: "text-emerald-600" },
+                    student: { title: "學生報名", icon: "fa-user-graduate", bgTheme: "bg-blue-100", textTheme: "text-blue-600" }
                 }[role];
 
                 return (
@@ -298,11 +307,11 @@
                         {/* Header */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                             <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 bg-${roleInfo.color}-100 rounded-xl flex items-center justify-center shadow-inner`}>
-                                    <i className={`fa-solid ${roleInfo.icon} text-2xl text-${roleInfo.color}-600`}></i>
+                                <div className={`w-12 h-12 ${roleInfo.bgTheme} rounded-xl flex items-center justify-center shadow-inner`}>
+                                    <i className={`fa-solid ${roleInfo.icon} text-2xl ${roleInfo.textTheme}`}></i>
                                 </div>
                                 <div>
-                                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">重補修檢核表 <span className={`text-${roleInfo.color}-600`}>{roleInfo.title}</span></h1>
+                                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">重補修檢核表 <span className={roleInfo.textTheme}>{roleInfo.title}</span></h1>
                                     <p className="text-gray-500 text-sm mt-1">武陵高中 115年度</p>
                                 </div>
                             </div>
@@ -320,7 +329,7 @@
                             </div>
                         </div>
 
-                        {/* 學生專屬警告區塊 */}
+                        {/* 學生專屬警告區塊 (已修改) */}
                         {role === 'student' && (
                             <div className="bg-orange-50 border-l-4 border-orange-500 p-5 rounded-r-xl shadow-sm mb-6 animate-fade-in">
                                 <h3 className="font-bold text-orange-800 text-lg flex items-center gap-2 mb-3">
@@ -329,15 +338,22 @@
                                 <div className="space-y-3 text-orange-900 text-sm bg-white/50 p-4 rounded-lg">
                                     <p className="flex items-start gap-2">
                                         <i className="fa-solid fa-ban text-red-500 mt-1"></i>
-                                        <span><strong>梯次 99 選課確認：</strong>若漏掉 5/18-5/22 的「梯次 99 選課確認(意願登記)」，正式報名（梯次 1, 2）將會被系統完全鎖定，無法補救！</span>
+                                        <span><strong>梯次 99 重要報名依據：</strong>若漏掉 5/18-5/22 的「梯次 99 選課確認(意願登記)」，正式報名（梯次 1, 2）將會被系統完全鎖定，無法補救！</span>
                                     </p>
-                                    <p className="flex items-start gap-2">
+                                    <div className="flex items-start gap-2">
                                         <i className="fa-solid fa-eye text-blue-500 mt-1"></i>
-                                        <span><strong>跨年級情境說明：</strong>高一生因下學期成績尚未結算，系統上完全看不到下學期科目；高二、高三生可看見以前一下和二下須重修的課程。</span>
-                                    </p>
+                                        <div className="flex-1">
+                                            <strong>跨年級視角情境：</strong>
+                                            <ul className="list-disc ml-5 mt-1 space-y-1">
+                                                <li><strong>高三生（含校友）：</strong>可確認高一至高三下全部學期可重修科目。</li>
+                                                <li><strong>高二生：</strong>可確認高一全及高二上學期科目。<span className="text-red-600 font-semibold">請注意：高二下學期科目因尚未結算，系統目前不會顯示。</span></li>
+                                                <li><strong>高一生：</strong>可確認高一上學期科目。系統不會顯示高一下學期任何科目（因成績未結算），請待結算後參與後續正式報名（梯次二）。</li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                     <p className="flex items-start gap-2">
                                         <i className="fa-solid fa-life-ring text-emerald-500 mt-1"></i>
-                                        <span><strong>補救特殊路徑：</strong>若您報名的科目人數最後確定是5 人(含)以下面臨「不開班」，且該科目<strong>影響您的畢業權益</strong>，請自行下載「附件二」提出特殊申請。</span>
+                                        <span><strong>補救特殊路徑：</strong>若您報名的科目人數 5 人(含)以下面臨「不開班」，且該科目<strong>影響您的畢業權益</strong>，請務必下載「附件二」提出特殊申請。</span>
                                     </p>
                                 </div>
                             </div>
@@ -385,10 +401,10 @@
                                                         className={`p-5 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 transition-all duration-300 hover:bg-gray-50 
                                                             ${isChecked ? 'bg-gray-50' : ''}`}
                                                     >
-                                                        <label className="checkbox-wrapper flex-shrink-0 flex items-start pt-1 cursor-pointer">
+                                                        <label className="flex-shrink-0 flex items-start pt-1 cursor-pointer">
                                                             <input 
                                                                 type="checkbox" 
-                                                                className="peer sr-only"
+                                                                className="sr-only"
                                                                 checked={isChecked || false}
                                                                 onChange={() => toggleTask(item.id)}
                                                             />
@@ -418,12 +434,13 @@
                                                                 {item.task}
                                                             </h3>
                                                             {item.detail && (
-                                                                <p className={`text-sm leading-relaxed 
+                                                                <p className={`text-sm leading-relaxed whitespace-pre-line
                                                                     ${isChecked ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                    {item.detail.split(/(【動作】|【系統操作】|【系統檢核重點】)/g).map((part, i) => {
+                                                                    {item.detail.split(/(【動作】|【系統操作】|【系統檢核重點】|【備註說明】)/g).map((part, i) => {
                                                                         if (part === '【動作】') return <strong key={i} className={`px-1 rounded ${isChecked ? '' : 'bg-yellow-100 text-yellow-800'}`}>{part}</strong>;
                                                                         if (part === '【系統操作】') return <strong key={i} className={`px-1 rounded ${isChecked ? '' : 'bg-purple-100 text-purple-800'}`}>{part}</strong>;
                                                                         if (part === '【系統檢核重點】') return <strong key={i} className={`px-1 rounded ${isChecked ? '' : 'bg-red-100 text-red-800'}`}>{part}</strong>;
+                                                                        if (part === '【備註說明】') return <strong key={i} className={`px-1 rounded ${isChecked ? '' : 'bg-blue-100 text-blue-800'}`}>{part}</strong>;
                                                                         return part;
                                                                     })}
                                                                 </p>
